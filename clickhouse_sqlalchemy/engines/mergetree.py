@@ -223,3 +223,29 @@ class ReplacingMergeTree(MergeTree):
             version=version_col,
             **cls._reflect_merge_tree(table, **kwargs)
         )
+class VersionedReplacingMergeTree(MergeTree):
+    def __init__(self, version_col, deleted_col, *args, **kwargs):
+        super(VersionedReplacingMergeTree, self).__init__(*args, **kwargs)
+
+        self.version_col = TableCol(version_col)
+        self.deleted_col = TableCol(deleted_col)
+
+    def _set_parent(self, table, **kwargs):
+        super(VersionedReplacingMergeTree, self)._set_parent(table, **kwargs)
+
+        self.version_col._set_parent(table, **kwargs)
+        self.deleted_col._set_parent(table, **kwargs)
+
+    def get_parameters(self):
+        return [self.version_col.get_column(), self.deleted_col.get_column()]
+
+    @classmethod
+    def reflect(cls, table, engine_full, **kwargs):
+        engine = parse_columns(engine_full, delimeter=' ')[0]
+        columns = engine[len(cls.__name__):].strip('()')
+        version_col, deleted_col = parse_columns(columns)
+
+        return cls(
+            version_col, deleted_col,
+            **cls._reflect_merge_tree(table, **kwargs)
+        )

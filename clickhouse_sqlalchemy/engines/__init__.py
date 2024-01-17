@@ -1,7 +1,7 @@
 
 from .mergetree import (
     MergeTree, AggregatingMergeTree, GraphiteMergeTree, CollapsingMergeTree,
-    VersionedCollapsingMergeTree, ReplacingMergeTree, SummingMergeTree
+    VersionedCollapsingMergeTree, ReplacingMergeTree, VersionedReplacingMergeTree, SummingMergeTree
 )
 from .misc import (
     Distributed, View, MaterializedView,
@@ -22,6 +22,7 @@ __all__ = (
     VersionedCollapsingMergeTree,
     SummingMergeTree,
     ReplacingMergeTree,
+    VersionedReplacingMergeTree,
     Distributed,
     ReplicatedMergeTree,
     ReplicatedAggregatingMergeTree,
