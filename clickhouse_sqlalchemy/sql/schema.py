@@ -69,7 +69,7 @@ class MaterializedView(DialectKWArgs, SchemaItem, Immutable, FromClause):
 
     def __new__(cls, inner_model, selectable, if_not_exists=False,
                 cluster=None, populate=False, use_to=None,
-                mv_suffix='_mv', name=None):
+                mv_suffix='_mv', name=None,stream_like_engine_allow_direct_select=None):
         rv = object.__new__(cls)
         rv.__init__()
 
@@ -79,6 +79,7 @@ class MaterializedView(DialectKWArgs, SchemaItem, Immutable, FromClause):
         rv.cluster = cluster
         rv.populate = populate
         rv.to = use_to
+        rv.stream_like_engine_allow_direct_select = stream_like_engine_allow_direct_select
 
         table = inner_model.__table__
         metadata = rv.inner_table.metadata
@@ -113,7 +114,9 @@ class MaterializedView(DialectKWArgs, SchemaItem, Immutable, FromClause):
             )
 
         args += ['AS ' + str(self.mv_selectable)]
-
+        # stream_like_engine_allow_direct_select
+        args += ['SETTINGS stream_like_engine_allow_direct_select=' + str(self.stream_like_engine_allow_direct_select)]
+        
         return 'MaterializedView(%s)' % ', '.join(args)
 
     def create(self, bind=None, checkfirst=False, if_not_exists=False):

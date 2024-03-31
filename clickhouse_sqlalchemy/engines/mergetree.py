@@ -196,39 +196,31 @@ class SummingMergeTree(MergeTree):
 
 
 class ReplacingMergeTree(MergeTree):
-    def __init__(self, *args, **kwargs):
-        version_col = kwargs.pop('version', None)
+    def __init__(self, version, *args, **kwargs):
         deleted_col = kwargs.pop('deleted', None)
         super(ReplacingMergeTree, self).__init__(*args, **kwargs)
 
-        self.version_col = None
-        if version_col is not None:
-            self.version_col = TableCol(version_col)
-            
-        self.deleted_col = None
+        self.version_col = TableCol(version)
         if deleted_col is not None:
             self.deleted_col = TableCol(deleted_col)
 
     def _set_parent(self, table, **kwargs):
         super(ReplacingMergeTree, self)._set_parent(table, **kwargs)
 
-        if self.version_col is not None:
-            self.version_col._set_parent(table, **kwargs)
-            
+        self.version_col._set_parent(table, **kwargs)
         if self.deleted_col is not None:
             self.deleted_col._set_parent(table, **kwargs)
 
     def get_parameters(self):
-        if self.version_col is not None:
-            return self.version_col.get_column()
         if self.deleted_col is not None:
-            return self.deleted_col.get_column()
+            return [self.version_col.get_column(), self.deleted_col.get_column()]
+        return [self.version_col.get_column(), None]
 
     @classmethod
     def reflect(cls, table, engine_full, **kwargs):
         engine = parse_columns(engine_full, delimeter=' ')[0]
-        version_col = engine[len(cls.__name__):].strip('()') or None
-        deleted_col = engine[len(cls.__name__):].strip('()') or None
+        columns = engine[len(cls.__name__):].strip('()')
+        version_col, deleted_col = parse_columns(columns)
 
         return cls(
             version=version_col,
