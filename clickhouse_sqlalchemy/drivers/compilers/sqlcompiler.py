@@ -4,6 +4,8 @@ from sqlalchemy.sql import compiler, elements, COLLECT_CARTESIAN_PRODUCTS, \
 from sqlalchemy.sql import type_api
 from sqlalchemy.util import inspect_getfullargspec
 
+import clickhouse_sqlalchemy.sql.functions  # noqa:F401
+
 from ... import types
 
 
@@ -475,7 +477,7 @@ class ClickHouseSQLCompiler(compiler.SQLCompiler):
 
     def visit_regexp_match_op_binary(self, binary, operator, **kw):
         string, pattern = self._get_regexp_args(binary, kw)
-        return "MATCH(%s, %s)" % (string, pattern)
+        return "match(%s, %s)" % (string, pattern)
 
     def visit_not_regexp_match_op_binary(self, binary, operator, **kw):
         return "NOT %s" % self.visit_regexp_match_op_binary(
@@ -498,3 +500,23 @@ class ClickHouseSQLCompiler(compiler.SQLCompiler):
             self.process(binary.left, **kw),
             self.process(binary.right, **kw)
         )
+
+    def get_select_precolumns(self, select, **kw):
+        # Do not call super().get_select_precolumns because
+        # it will warn/raise when distinct on is present
+        if select._distinct or select._distinct_on:
+            if select._distinct_on:
+                return (
+                    "DISTINCT ON ("
+                    + ", ".join(
+                        [
+                            self.process(col, **kw)
+                            for col in select._distinct_on
+                        ]
+                    )
+                    + ") "
+                )
+            else:
+                return "DISTINCT "
+        else:
+            return ""

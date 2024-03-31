@@ -8,9 +8,14 @@ from ..base import (
     ClickHouseDialect, ClickHouseExecutionContextBase, ClickHouseSQLCompiler,
 )
 from sqlalchemy.engine.interfaces import ExecuteStyle
+from sqlalchemy import __version__ as sqlalchemy_version
 
 # Export connector version
 VERSION = (0, 0, 2, None)
+
+sqlalchemy_version = tuple(
+    (int(x) if x.isdigit() else x) for x in sqlalchemy_version.split('.')
+)
 
 
 class ClickHouseExecutionContext(ClickHouseExecutionContextBase):
@@ -52,12 +57,16 @@ class ClickHouseDialect_native(ClickHouseDialect):
         return connector
 
     def create_connect_args(self, url):
+        use_quote = sqlalchemy_version < (2, 0, 24)
+
         url = url.set(drivername='clickhouse')
         if url.username:
-            url = url.set(username=quote(url.username))
+            username = quote(url.username) if use_quote else url.username
+            url = url.set(username=username)
 
         if url.password:
-            url = url.set(password=quote(url.password))
+            password = quote(url.password) if use_quote else url.password
+            url = url.set(password=password)
 
         self.engine_reflection = asbool(
             url.query.get('engine_reflection', 'true')
