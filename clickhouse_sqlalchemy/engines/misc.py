@@ -148,3 +148,18 @@ class File(Engine):
     def reflect(cls, table, engine_full, **kwargs):
         fmt = engine_full.split('(', 1)[1][:-1].strip("'")
         return cls(fmt)
+
+class Kafka(Engine):
+    def __init__(self, broker_list, topic_list, kafka_group_name, kafka_format):
+        self.broker_list = broker_list
+        self.topic_list = topic_list
+        self.kafka_group_name = kafka_group_name
+        self.kafka_format = kafka_format
+        super(Kafka, self).__init__()
+
+    @property
+    def name(self):
+        return (
+            super(Kafka, self).name +
+            f"('{self.broker_list}','{self.topic_list}','{self.kafka_group_name}','{self.kafka_format}')"
+        )
