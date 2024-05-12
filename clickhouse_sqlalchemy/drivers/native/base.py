@@ -1,13 +1,18 @@
 from urllib.parse import quote
 
-from sqlalchemy.sql.elements import TextClause
+# SQLAlchemy >=2.0
+# from sqlalchemy.sql.elements import TextClause
+
 from sqlalchemy.util import asbool
 
 from . import connector
 from ..base import (
     ClickHouseDialect, ClickHouseExecutionContextBase, ClickHouseSQLCompiler,
 )
-from sqlalchemy.engine.interfaces import ExecuteStyle
+
+# SQLAlchemy >=2.0
+# from sqlalchemy.engine.interfaces import ExecuteStyle
+
 from sqlalchemy import __version__ as sqlalchemy_version
 
 # Export connector version
@@ -23,7 +28,11 @@ class ClickHouseExecutionContext(ClickHouseExecutionContextBase):
         # Always do executemany on INSERT with VALUES clause.
         if (self.isinsert and self.compiled.statement.select is None and
                 self.parameters != [{}]):
-            self.execute_style = ExecuteStyle.EXECUTEMANY
+            # SQLAlchemy >=2.0
+            # self.execute_style = ExecuteStyle.EXECUTEMANY
+            
+            # SQLAlchemy >=1.4, <1.5
+            self.execute_style = True
 
 
 class ClickHouseNativeSQLCompiler(ClickHouseSQLCompiler):
@@ -53,7 +62,13 @@ class ClickHouseDialect_native(ClickHouseDialect):
     supports_statement_cache = True
 
     @classmethod
-    def import_dbapi(cls):
+    # SQLAlchemy >=2.0
+    # @classmethod
+    # def import_dbapi(cls):
+    
+    # SQLAlchemy >=1.4, <1.5
+    @classmethod
+    def dbapi(cls):
         return connector
 
     def create_connect_args(self, url):
@@ -72,15 +87,24 @@ class ClickHouseDialect_native(ClickHouseDialect):
             url.query.get('engine_reflection', 'true')
         )
 
-        return (url.render_as_string(hide_password=False), ), {}
+        # SQLAlchemy >=2.0
+        # return (url.render_as_string(hide_password=False), ), {}
+        
+        # SQLAlchemy >=1.4, <1.5
+        return (str(url), ), {}
 
     def _execute(self, connection, sql, scalar=False, **kwargs):
-        if isinstance(sql, str):
-            # Makes sure the query will go through the
-            # `ClickHouseExecutionContext` logic.
-            sql = TextClause(sql)
+        # SQLAlchemy >=2.0
+        # if isinstance(sql, str):
+        #     # Makes sure the query will go through the
+        #     # `ClickHouseExecutionContext` logic.
+        #     sql = TextClause(sql)
+        # f = connection.scalar if scalar else connection.execute
+        # return f(sql, kwargs)
+        
+        # SQLAlchemy >=1.4, <1.5
         f = connection.scalar if scalar else connection.execute
-        return f(sql, kwargs)
+        return f(sql, **kwargs)
 
 
 dialect = ClickHouseDialect_native

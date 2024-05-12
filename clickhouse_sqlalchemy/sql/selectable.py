@@ -79,5 +79,8 @@ class Select(StandardSelect):
         return super().join(right, onclause=onclause, isouter=isouter,
                             full=flags)
 
+# SQLAlchemy >=2.0
+# select = Select
 
-select = Select
+# SQLAlchemy >=1.4, <1.5
+select = Select._create

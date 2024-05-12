@@ -30,9 +30,13 @@ class Table(TableBase):
                     full=flags)
 
     def select(self, whereclause=None, **params):
-        if whereclause:
-            return Select(self, whereclause, **params)
-        return Select(self, **params)
+        # SQLAlchemy >=2.0
+        # if whereclause:
+        #     return Select(self, whereclause, **params)
+        # return Select(self, **params)
+        
+        # SQLAlchemy >=1.4, <1.5
+        return Select._create([self], whereclause, **params)
 
     @classmethod
     def _make_from_standard(cls, std_table, _extend_on=None):
