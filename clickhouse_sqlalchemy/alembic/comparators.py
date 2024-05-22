@@ -22,8 +22,9 @@ def _extract_to_table_name(create_table_query):
     query = create_table_query
     # Naive inner name detection
     brace = query.index('(')
-    inner_name = query[query.index(' TO ', 0, brace) + 4:brace - 1].strip(' `')
-    return inner_name.split('.')[1] if '.' in inner_name else inner_name
+    inner_name = query[query.index(' TO ', 0, brace) + 4:brace - 1].strip()
+    table_name = inner_name.split('.')[1] if '.' in inner_name else inner_name
+    return table_name.strip('`')
 
 
 # Direct call .dispatch_for('schema', 'clickhouse') override an Alembic

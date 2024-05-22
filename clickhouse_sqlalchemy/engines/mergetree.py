@@ -196,23 +196,22 @@ class SummingMergeTree(MergeTree):
 
 
 class ReplacingMergeTree(MergeTree):
-    def __init__(self, version, *args, **kwargs):
-        deleted_col = kwargs.pop('deleted', None)
+    def __init__(self, version, deleted=None, *args, **kwargs):
         super(ReplacingMergeTree, self).__init__(*args, **kwargs)
 
         self.version_col = TableCol(version)
-        if deleted_col is not None:
-            self.deleted_col = TableCol(deleted_col)
+        if deleted is not None:
+            self.deleted_col = TableCol(deleted)
 
     def _set_parent(self, table, **kwargs):
         super(ReplacingMergeTree, self)._set_parent(table, **kwargs)
 
         self.version_col._set_parent(table, **kwargs)
-        if self.deleted_col is not None:
+        if hasattr(self, 'deleted_col') and self.deleted_col is not None:
             self.deleted_col._set_parent(table, **kwargs)
 
     def get_parameters(self):
-        if self.deleted_col is not None:
+        if hasattr(self, 'deleted_col') and self.deleted_col is not None:
             return [self.version_col.get_column(), self.deleted_col.get_column()]
         return [self.version_col.get_column(), None]
 
