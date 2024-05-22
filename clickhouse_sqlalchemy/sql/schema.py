@@ -89,6 +89,7 @@ class MaterializedView(DialectKWArgs, SchemaItem, Immutable, FromClause):
                 name = table.name + mv_suffix
         else:
             name = table.name
+            table.info['mv_storage'] = True
 
         rv.name = name
 

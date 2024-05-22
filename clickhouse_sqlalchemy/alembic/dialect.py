@@ -41,20 +41,22 @@ def patch_alembic_version(context, **kwargs):
     version = migration_context._version
 
     dt = Column('dt', types.DateTime, server_default=func.now())
+    deleted = Column('is_deleted', types.UInt8, server_default=func.cast(0,types.UInt8))
     version_num = Column('version_num', types.String, primary_key=True)
     version.append_column(dt)
     version.append_column(version_num, replace_existing=True)
+    version.append_column(deleted, replace_existing=True)
 
     if 'cluster' in kwargs:
         cluster = kwargs['cluster']
         version.engine = engines.ReplicatedReplacingMergeTree(
             kwargs['table_path'], kwargs['replica_name'],
-            version=dt, order_by=func.tuple()
+            version=dt, deleted=deleted, order_by=func.tuple()
         )
         version.kwargs['clickhouse_cluster'] = cluster
     else:
         version.engine = engines.ReplacingMergeTree(
-            version=dt, order_by=func.tuple()
+            version=dt, deleted=deleted, order_by=func.tuple()
         )
 
 

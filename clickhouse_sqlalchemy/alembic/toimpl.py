@@ -14,7 +14,7 @@ def create_mat_view(operations, operation):
     if operation.kwargs.get('if_not_exists'):
         text += 'IF NOT EXISTS '
 
-    text += operation.name
+    text += f"\"{operation.name}\""
 
     if operation.kwargs.get('on_cluster'):
         text += ' ON CLUSTER ' + operation.kwargs['on_cluster']
@@ -40,12 +40,12 @@ def create_mat_view_to_table(operations, operation):
     if operation.kwargs.get('if_not_exists'):
         text += 'IF NOT EXISTS '
 
-    text += operation.name
+    text += f"\"{operation.name}\""
 
     if operation.kwargs.get('on_cluster'):
         text += ' ON CLUSTER ' + operation.kwargs['on_cluster']
 
-    text += ' TO ' + operation.inner_name
+    text += ' TO ' + f"\"{operation.inner_name}\""
 
     if operation.kwargs.get('populate'):
         text += ' POPULATE'
@@ -65,7 +65,7 @@ def attach_mat_view(operations, operation):
     if operation.kwargs.get('if_not_exists'):
         text += 'IF NOT EXISTS '
 
-    text += operation.name + ' '
+    text += f"\"{operation.name}\"" + ' '
 
     if operation.kwargs.get('on_cluster'):
         text += ' ON CLUSTER ' + operation.kwargs['on_cluster']
