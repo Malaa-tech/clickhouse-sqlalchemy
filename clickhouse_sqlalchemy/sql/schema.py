@@ -37,7 +37,12 @@ class Table(TableBase):
         
         # SQLAlchemy >=1.4, <1.5
         return Select._create([self], whereclause, **params)
-
+    
+    # SQLAlchemy >=1.4, <1.5
+    @TableBase.c.setter
+    def c(self, value):
+        self.x = value
+    
     @classmethod
     def _make_from_standard(cls, std_table, _extend_on=None):
         ch_table = cls(std_table.name, std_table.metadata)

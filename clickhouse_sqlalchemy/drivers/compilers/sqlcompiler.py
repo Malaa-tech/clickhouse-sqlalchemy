@@ -433,15 +433,26 @@ class ClickHouseSQLCompiler(compiler.SQLCompiler):
         table_text = self.update_tables_clause(
             update_stmt, update_stmt.table, render_extra_froms, **kw
         )
+        # SQLAlchemy >=2.0
+        # crud_params = crud._get_crud_params(
+        #     self, update_stmt, compile_state, True, **kw
+        # )
+        
+        # SQLAlchemy >=1.4, <1.5
         crud_params = crud._get_crud_params(
-            self, update_stmt, compile_state, True, **kw
+            self, update_stmt, compile_state, **kw
         )
 
         text += table_text
         text += " UPDATE "
-        text += ", ".join(
-            expr + "=" + value for c,
-            expr, value, _ in crud_params.single_params)
+        # SQLAlchemy >=2.0
+        # text += ", ".join(
+        #     expr + "=" + value for c,
+        #     expr, value, _ in crud_params.single_params)
+        
+        # SQLAlchemy >=1.4, <1.5
+        text += ", ".join(expr + "=" + value for c, expr, value in crud_params)
+
 
         if update_stmt._where_criteria:
             t = self._generate_delimited_and_list(
